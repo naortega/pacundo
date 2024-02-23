@@ -38,13 +38,14 @@ sub print_help {
 	&print_version();
 	print("A time machine to return your ArchLinux machine back to a working state.\n");
 	print("\nUSAGE:
-	$PROG_NAME [-i|-r]
+	$PROG_NAME [-i|-r] [-d]
 	$PROG_NAME -h
 	$PROG_NAME -v
 
 OPTIONS:
 	-i   Enter interactive mode to select packages to downgrade [default behavior]
 	-r   Automatically downgrade all packages from last upgrade
+	-d   Dry run, i.e. don't actually do anything
 	-h   Show this help information
 	-v   Print program version\n");
 }
