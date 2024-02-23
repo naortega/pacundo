@@ -30,6 +30,9 @@ use Getopt::Std;
 my $VERSION = "1.0";
 my $PROG_NAME = "pacundo";
 
+my $r_flag = 0;
+my $dry_run = 0;
+
 sub print_version {
 	print("$PROG_NAME v$VERSION\n");
 }
@@ -50,7 +53,7 @@ OPTIONS:
 	-v   Print program version\n");
 }
 
-getopts("irvh", \my %opts);
+getopts("irdvh", \my %opts);
 
 if ($opts{'v'}) {
 	&print_version();
@@ -58,4 +61,11 @@ if ($opts{'v'}) {
 } elsif ($opts{'h'}) {
 	&print_help();
 	exit 0;
+} elsif ($opts{'r'} && $opts{'i'}) {
+	print("Improper usage. -r and -i cannot be used at the same time.\n");
+	print("Use -h for help information.\n");
+	exit 1;
 }
+
+$r_flag = 1 if ($opts{'r'});
+$dry_run = 1 if ($opts{'d'});
