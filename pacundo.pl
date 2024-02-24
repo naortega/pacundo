@@ -68,6 +68,9 @@ if ($opts{'v'}) {
 	print("Improper usage. -r and -i cannot be used at the same time.\n");
 	print("Use -h for help information.\n");
 	exit 1;
+} elsif ($opts{'t'} && !($opts{'t'} =~ /[0-9]+/)) {
+	print("The argument for -t must be a positive integer.\n");
+	exit 1;
 }
 
 $r_flag = 1 if ($opts{'r'});
