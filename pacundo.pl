@@ -26,12 +26,14 @@ use strict;
 use warnings;
 
 use Getopt::Std;
+use File::ReadBackwards;
 
 my $VERSION = "1.0";
 my $PROG_NAME = "pacundo";
 
 my $r_flag = 0;
 my $dry_run = 0;
+my $num_txs = 1;
 
 sub print_version {
 	print("$PROG_NAME v$VERSION\n");
@@ -41,19 +43,20 @@ sub print_help {
 	&print_version();
 	print("A time machine to return your ArchLinux machine back to a working state.\n");
 	print("\nUSAGE:
-	$PROG_NAME [-i|-r] [-d]
+	$PROG_NAME [-i|-r] [-t <num>] [-d]
 	$PROG_NAME -h
 	$PROG_NAME -v
 
 OPTIONS:
-	-i   Enter interactive mode to select packages to downgrade [default behavior]
-	-r   Automatically downgrade all packages from last upgrade
-	-d   Dry run, i.e. don't actually do anything
-	-h   Show this help information
-	-v   Print program version\n");
+	-i         Enter interactive mode to select packages to downgrade [default behavior]
+	-r         Automatically downgrade all packages from last upgrade
+	-t <num>   Specify the number of transactions to include for undoing selection [default 1]
+	-d         Dry run, i.e. don't actually do anything
+	-h         Show this help information
+	-v         Print program version\n");
 }
 
-getopts("irdvh", \my %opts);
+getopts("irt:dvh", \my %opts);
 
 if ($opts{'v'}) {
 	&print_version();
@@ -69,3 +72,28 @@ if ($opts{'v'}) {
 
 $r_flag = 1 if ($opts{'r'});
 $dry_run = 1 if ($opts{'d'});
+$num_txs = $opts{'t'} if ($opts{'t'});
+
+my $pacman_log = File::ReadBackwards->new("/var/log/pacman.log") or
+die("Failed to load pacman log file.\n$!");
+
+my $found_txs = 0;
+my $in_tx = 0;
+
+while ($found_txs < $num_txs && defined(my $line = $pacman_log->readline)) {
+	# Remeber that we're reading this in reverse order
+	if (!$in_tx && $line =~ /\[ALPM\] transaction completed/) {
+		$in_tx = 1;
+	} elsif ($in_tx) {
+		if ($line =~ /\[ALPM\] transaction started/) {
+			$found_txs++;
+			$in_tx = 0;
+		} elsif ($line =~ /\[ALPM\] (upgraded|downgraded)/) {
+			my ($action, $package, $oldver, $newver) = $line =~ /\[ALPM\] (upgraded|downgraded) ([^\s]+) \((.*) -> (.*)\)/;
+			print("$action $package $oldver -> $newver\n");
+		} elsif ($line =~ /\[ALPM\] (installed|removed)/) {
+			my ($action, $package) = $line =~ /\[ALPM\] (installed|removed) ([^\s]+)/;
+			print("$action $package\n");
+		}
+	}
+}
