@@ -83,6 +83,8 @@ die("Failed to load pacman log file.\n$!");
 my $found_txs = 0;
 my $in_tx = 0;
 
+my @undo_txs;
+
 while ($found_txs < $num_txs && defined(my $line = $pacman_log->readline)) {
 	# Remeber that we're reading this in reverse order
 	if (!$in_tx && $line =~ /\[ALPM\] transaction completed/) {
@@ -92,11 +94,23 @@ while ($found_txs < $num_txs && defined(my $line = $pacman_log->readline)) {
 			$found_txs++;
 			$in_tx = 0;
 		} elsif ($line =~ /\[ALPM\] (upgraded|downgraded)/) {
-			my ($action, $package, $oldver, $newver) = $line =~ /\[ALPM\] (upgraded|downgraded) ([^\s]+) \((.*) -> (.*)\)/;
-			print("$action $package $oldver -> $newver\n");
+			my ($action, $pkg_name, $oldver, $newver) = $line =~ /\[ALPM\] (upgraded|downgraded) ([^\s]+) \((.*) -> (.*)\)/;
+			push(@undo_txs,
+				{
+					'action' => $action,
+					'pkg_name' => $pkg_name,
+					'oldver' => $oldver,
+					'newver' => $newver,
+				}
+			);
 		} elsif ($line =~ /\[ALPM\] (installed|removed)/) {
-			my ($action, $package) = $line =~ /\[ALPM\] (installed|removed) ([^\s]+)/;
-			print("$action $package\n");
+			my ($action, $pkg_name) = $line =~ /\[ALPM\] (installed|removed) ([^\s]+)/;
+			push(@undo_txs,
+				{
+					'action' => $action,
+					'pkg_name' => $pkg_name,
+				}
+			);
 		}
 	}
 }
