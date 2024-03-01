@@ -31,10 +31,6 @@ use File::ReadBackwards;
 my $VERSION = "1.0";
 my $PROG_NAME = "pacundo";
 
-my $r_flag = 0;
-my $dry_run = 0;
-my $num_txs = 1;
-
 sub print_version {
 	print("$PROG_NAME v$VERSION\n");
 }
@@ -73,9 +69,9 @@ if ($opts{'v'}) {
 	exit 1;
 }
 
-$r_flag = 1 if ($opts{'r'});
-$dry_run = 1 if ($opts{'d'});
-$num_txs = $opts{'t'} if ($opts{'t'});
+my $r_flag = $opts{'r'} // 0;
+my $dry_run = $opts{'d'} // 0;
+my $num_txs = $opts{'t'} // 1;
 
 my $pacman_log = File::ReadBackwards->new("/var/log/pacman.log") or
 die("Failed to load pacman log file.\n$!");
