@@ -73,8 +73,8 @@ my $r_flag = $opts{'r'} // 0;
 my $dry_run = $opts{'d'} // 0;
 my $num_txs = $opts{'t'} // 1;
 
-my $pacman_log = File::ReadBackwards->new("/var/log/pacman.log") or
-die("Failed to load pacman log file.\n$!");
+my $pacman_log = File::ReadBackwards->new("/var/log/pacman.log") ||
+	die("Failed to load pacman log file.\n$!");
 
 my $found_txs = 0;
 my $in_tx = 0;
