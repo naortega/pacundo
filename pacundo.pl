@@ -110,3 +110,48 @@ while ($found_txs < $num_txs && defined(my $line = $pacman_log->readline)) {
 		}
 	}
 }
+
+
+# Interactive mode
+if (!$r_flag) {
+	print("Last changes:\n");
+	my $n = 1;
+	foreach my $tx (@undo_txs) {
+		if ($tx->{action} =~ /(upgraded|downgraded)/) {
+			format UPGRFORMAT =
+ @||  @<<  @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  @<<<<<<<<<<< -> @<<<<<<<<<<<<<
+$n, $tx->{action}, $tx->{pkg_name}, $tx->{oldver}, $tx->{newver}
+.
+			$~ = "UPGRFORMAT";
+		} else {
+			format INSTFORMAT =
+ @||  @<<  @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+$n, $tx->{action}, $tx->{pkg_name}
+.
+			$~ = "INSTFORMAT";
+		}
+		write();
+		$n++;
+	}
+
+	print("Select transactions to undo (e.g. '1 2 3', '1-3')\n");
+	print("> ");
+	my @sel = split(' ', <STDIN>);
+
+	foreach my $i (@sel) {
+		if ($i =~ /[0-9]-[0-9]/) {
+			my ($start, $end) = $i =~ /([0-9])-([0-9])/;
+			push(@sel, ($start..$end));
+		}
+	}
+
+	@sel = sort grep(!/[0-9]-[0-9]/, @sel);
+
+	my @sel_undo;
+
+	foreach my $i (@sel) {
+		push(@sel_undo, $undo_txs[$i-1]);
+	}
+
+	@undo_txs = @sel_undo;
+}
