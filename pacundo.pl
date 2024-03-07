@@ -33,6 +33,7 @@ my $PROG_NAME = "pacundo";
 
 sub print_version {
 	print("$PROG_NAME v$VERSION\n");
+	return;
 }
 
 sub print_help {
@@ -50,6 +51,7 @@ OPTIONS:
 	-d         Dry run, i.e. don't actually do anything
 	-h         Show this help information
 	-v         Print program version\n");
+	return;
 }
 
 getopts("irt:dvh", \my %opts);
