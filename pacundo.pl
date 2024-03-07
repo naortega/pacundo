@@ -119,19 +119,16 @@ if (!$r_flag) {
 	print("Last changes:\n");
 	my $n = 1;
 	foreach my $tx (@undo_txs) {
-		if ($tx->{action} =~ /(upgraded|downgraded)/) {
-			format UPGRFORMAT =
+		format UPGRFORMAT =
  @||  @<<  @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  @<<<<<<<<<<< -> @<<<<<<<<<<<<<
 $n, $tx->{action}, $tx->{pkg_name}, $tx->{oldver}, $tx->{newver}
 .
-			$~ = "UPGRFORMAT";
-		} else {
-			format INSTFORMAT =
+		format INSTFORMAT =
  @||  @<<  @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 $n, $tx->{action}, $tx->{pkg_name}
 .
-			$~ = "INSTFORMAT";
-		}
+
+		local $~ = ($tx->{action} =~ /(upgraded|downgraded)/) ? "UPGRFORMAT" : "INSTFORMAT";
 		write();
 		$n++;
 	}
