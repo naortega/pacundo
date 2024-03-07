@@ -147,7 +147,7 @@ $n, $tx->{action}, $tx->{pkg_name}
 		}
 	}
 
-	@sel = sort grep(!/[0-9]-[0-9]/, @sel);
+	@sel = sort grep({!/[0-9]-[0-9]/} @sel);
 
 	my @sel_undo;
 
