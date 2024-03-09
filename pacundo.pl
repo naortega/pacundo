@@ -24,6 +24,7 @@
 
 use strict;
 use warnings;
+use feature qw(signatures);
 
 use Getopt::Std;
 use File::ReadBackwards;
@@ -31,12 +32,12 @@ use File::ReadBackwards;
 my $VERSION = "1.0";
 my $PROG_NAME = "pacundo";
 
-sub print_version {
+sub print_version() {
 	print("$PROG_NAME v$VERSION\n");
 	return;
 }
 
-sub print_help {
+sub print_help() {
 	&print_version();
 	print("A time machine to return your ArchLinux machine back to a working state.\n");
 	print("\nUSAGE:
@@ -52,6 +53,91 @@ OPTIONS:
 	-h         Show this help information
 	-v         Print program version\n");
 	return;
+}
+
+sub read_txs($num_txs = 1) {
+	my $found_txs = 0;
+	my $in_tx = 0;
+	my @undo_txs;
+	my $pacman_log = File::ReadBackwards->new("/var/log/pacman.log") ||
+		die("Failed to load pacman log file.\n$!");
+
+	while ($found_txs < $num_txs && defined(my $line = $pacman_log->readline)) {
+		unless ($in_tx) {
+			# Remeber that we're reading this in reverse order
+			if ($line =~ /\[ALPM\] transaction completed/) {
+				$in_tx = 1;
+			}
+		} elsif ($line =~ /\[ALPM\] transaction started/) {
+			$found_txs++;
+			$in_tx = 0;
+		} elsif ($line =~ /\[ALPM\] (upgraded|downgraded)/) {
+			my ($action, $pkg_name, $oldver, $newver) =
+				$line =~ /\[ALPM\] (upgraded|downgraded) ([^\s]+) \((.*) -> (.*)\)/;
+			push(@undo_txs,
+				{
+					'action' => $action,
+					'pkg_name' => $pkg_name,
+					'oldver' => $oldver,
+					'newver' => $newver,
+				}
+			);
+		} elsif ($line =~ /\[ALPM\] (installed|removed)/) {
+			my ($action, $pkg_name) = $line =~ /\[ALPM\] (installed|removed) ([^\s]+)/;
+			push(@undo_txs,
+				{
+					'action' => $action,
+					'pkg_name' => $pkg_name,
+				}
+			);
+		}
+	}
+
+	return @undo_txs;
+}
+
+sub select_txs(@undo_txs) {
+	print("Last changes:\n");
+
+	my $n = 1;
+
+	foreach my $tx (@undo_txs) {
+		format UPGRFORMAT =
+ @||  @<<  @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  @<<<<<<<<<<< -> @<<<<<<<<<<<<<
+$n, $tx->{action}, $tx->{pkg_name}, $tx->{oldver}, $tx->{newver}
+.
+		format INSTFORMAT =
+ @||  @<<  @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+$n, $tx->{action}, $tx->{pkg_name}
+.
+
+		local $~ = ($tx->{action} =~ /(upgraded|downgraded)/) ? "UPGRFORMAT" : "INSTFORMAT";
+		write();
+
+		$n++;
+	}
+
+	print("Select transactions to undo (e.g. '1 2 3', '1-3')\n");
+	print("> ");
+
+	my @sel = split(' ', <STDIN>);
+
+	foreach my $i (@sel) {
+		if ($i =~ /[0-9]+-[0-9]+/) {
+			my ($start, $end) = $i =~ /([0-9]+)-([0-9+])/;
+			push(@sel, ($start..$end));
+		}
+	}
+
+	@sel = sort grep({!/[0-9+]-[0-9+]/} @sel);
+
+	my @sel_undo;
+
+	foreach my $i (@sel) {
+		push(@sel_undo, $undo_txs[$i-1]);
+	}
+
+	return @sel_undo;
 }
 
 getopts("irt:dvh", \my %opts);
@@ -75,82 +161,9 @@ my $r_flag = $opts{'r'} // 0;
 my $dry_run = $opts{'d'} // 0;
 my $num_txs = $opts{'t'} // 1;
 
-my $pacman_log = File::ReadBackwards->new("/var/log/pacman.log") ||
-	die("Failed to load pacman log file.\n$!");
-
-my $found_txs = 0;
-my $in_tx = 0;
-
-my @undo_txs;
-
-while ($found_txs < $num_txs && defined(my $line = $pacman_log->readline)) {
-	# Remeber that we're reading this in reverse order
-	if (!$in_tx && $line =~ /\[ALPM\] transaction completed/) {
-		$in_tx = 1;
-	} elsif ($in_tx) {
-		if ($line =~ /\[ALPM\] transaction started/) {
-			$found_txs++;
-			$in_tx = 0;
-		} elsif ($line =~ /\[ALPM\] (upgraded|downgraded)/) {
-			my ($action, $pkg_name, $oldver, $newver) = $line =~ /\[ALPM\] (upgraded|downgraded) ([^\s]+) \((.*) -> (.*)\)/;
-			push(@undo_txs,
-				{
-					'action' => $action,
-					'pkg_name' => $pkg_name,
-					'oldver' => $oldver,
-					'newver' => $newver,
-				}
-			);
-		} elsif ($line =~ /\[ALPM\] (installed|removed)/) {
-			my ($action, $pkg_name) = $line =~ /\[ALPM\] (installed|removed) ([^\s]+)/;
-			push(@undo_txs,
-				{
-					'action' => $action,
-					'pkg_name' => $pkg_name,
-				}
-			);
-		}
-	}
-}
-
+my @undo_txs = &read_txs($num_txs);
 
 # Interactive mode
-if (!$r_flag) {
-	print("Last changes:\n");
-	my $n = 1;
-	foreach my $tx (@undo_txs) {
-		format UPGRFORMAT =
- @||  @<<  @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  @<<<<<<<<<<< -> @<<<<<<<<<<<<<
-$n, $tx->{action}, $tx->{pkg_name}, $tx->{oldver}, $tx->{newver}
-.
-		format INSTFORMAT =
- @||  @<<  @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-$n, $tx->{action}, $tx->{pkg_name}
-.
-
-		local $~ = ($tx->{action} =~ /(upgraded|downgraded)/) ? "UPGRFORMAT" : "INSTFORMAT";
-		write();
-		$n++;
-	}
-
-	print("Select transactions to undo (e.g. '1 2 3', '1-3')\n");
-	print("> ");
-	my @sel = split(' ', <STDIN>);
-
-	foreach my $i (@sel) {
-		if ($i =~ /[0-9]-[0-9]/) {
-			my ($start, $end) = $i =~ /([0-9])-([0-9])/;
-			push(@sel, ($start..$end));
-		}
-	}
-
-	@sel = sort grep({!/[0-9]-[0-9]/} @sel);
-
-	my @sel_undo;
-
-	foreach my $i (@sel) {
-		push(@sel_undo, $undo_txs[$i-1]);
-	}
-
-	@undo_txs = @sel_undo;
+unless ($r_flag) {
+	@undo_txs = &select_txs(@undo_txs);
 }
