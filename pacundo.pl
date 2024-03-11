@@ -164,6 +164,4 @@ my $num_txs = $opts{'t'} // 1;
 my @undo_txs = &read_txs($num_txs);
 
 # Interactive mode
-unless ($r_flag) {
-	@undo_txs = &select_txs(@undo_txs);
-}
+@undo_txs = &select_txs(@undo_txs) unless ($r_flag);
