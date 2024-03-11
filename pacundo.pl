@@ -123,8 +123,8 @@ $n, $tx->{action}, $tx->{pkg_name}
 	my @sel = split(' ', <STDIN>);
 
 	foreach my $i (@sel) {
-		if ($i =~ /[0-9]+-[0-9]+/) {
-			my ($start, $end) = $i =~ /([0-9]+)-([0-9+])/;
+		if ($i =~ /^[0-9]+-[0-9]+$/) {
+			my ($start, $end) = $i =~ /^([0-9]+)-([0-9]+)$/;
 			push(@sel, ($start..$end));
 		}
 	}
