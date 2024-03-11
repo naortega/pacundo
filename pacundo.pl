@@ -125,6 +125,9 @@ $n, $tx->{action}, $tx->{pkg_name}
 	foreach my $i (@sel) {
 		if ($i =~ /^[0-9]+-[0-9]+$/) {
 			my ($start, $end) = $i =~ /^([0-9]+)-([0-9]+)$/;
+			if ($start >= $end) {
+				die("Invalid range: $start-$end\n");
+			}
 			push(@sel, ($start..$end));
 		}
 	}
