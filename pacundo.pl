@@ -59,7 +59,7 @@ sub read_txs($num_txs = 1) {
 	my $found_txs = 0;
 	my $in_tx = 0;
 	my @undo_txs;
-	my $pacman_log = File::ReadBackwards->new("/var/log/pacman.log") ||
+	my $pacman_log = File::ReadBackwards->new("/var/log/pacman.log") or
 		die("Failed to load pacman log file.\n$!");
 
 	while ($found_txs < $num_txs && defined(my $line = $pacman_log->readline)) {
@@ -122,23 +122,16 @@ $n, $tx->{action}, $tx->{pkg_name}
 
 	my @sel = split(' ', <STDIN>);
 
-	foreach my $i (@sel) {
-		if ($i =~ /^[0-9]+-[0-9]+$/) {
-			my ($start, $end) = $i =~ /^([0-9]+)-([0-9]+)$/;
-			if ($start >= $end) {
-				die("Invalid range: $start-$end\n");
-			}
-			push(@sel, ($start..$end));
-		}
+	foreach my $i (grep({/^[0-9]+-[0-9]+$/} @sel)) {
+		my ($start, $end) = $i =~ /^([0-9]+)-([0-9]+)$/;
+		die("Invalid range: $start-$end\n") if ($start >= $end);
+		push(@sel, ($start..$end));
 	}
 
 	@sel = sort grep({!/[0-9+]-[0-9+]/} @sel);
 
 	my @sel_undo;
-
-	foreach my $i (@sel) {
-		push(@sel_undo, $undo_txs[$i-1]);
-	}
+	push(@sel_undo, $undo_txs[$_-1]) foreach (@sel);
 
 	return @sel_undo;
 }
