@@ -136,6 +136,30 @@ $n, $tx->{action}, $tx->{pkg_name}
 	return @sel_undo;
 }
 
+sub get_pkgmgr() {
+	my $mgr = $ENV{DEFAULT_PKGMGR} // 'pacman';
+	my $mgr_bin = `which $mgr`;
+
+	if ($? != 0) {
+		print(STDERR "Failed to find pacman executable. Are you using an ArchLinux system?\n");
+		exit 1;
+	}
+
+	my $mgr_cmd_search = "$mgr_bin -Ss";
+	my $mgr_cmd_install_remote = "$mgr_bin -S";
+	my $mgr_cmd_install_local = "$mgr_bin -U";
+
+	my %pkgmgr = (
+		name           => $mgr,
+		bin            => $mgr_bin,
+		search         => $mgr_cmd_search,
+		install_remote => $mgr_cmd_install_remote,
+		install_local  => $mgr_cmd_install_local,
+	);
+
+	return \%pkgmgr;
+}
+
 getopts("irt:dvh", \my %opts);
 
 if ($opts{'v'}) {
@@ -157,6 +181,7 @@ my $r_flag = $opts{'r'} // 0;
 my $dry_run = $opts{'d'} // 0;
 my $num_txs = $opts{'t'} // 1;
 
+my $pkgmgr = &get_pkgmgr();
 my @undo_txs = &read_txs($num_txs);
 
 # Interactive mode
