@@ -129,7 +129,7 @@ $n, $tx->{action}, $tx->{pkg_name}
 		push(@sel, ($start..$end));
 	}
 
-	@sel = sort grep({!/[0-9+]-[0-9+]/} @sel);
+	@sel = sort grep({!/[0-9]+-[0-9]+/} @sel);
 
 	my @sel_undo;
 	push(@sel_undo, $undo_txs[$_-1]) foreach (@sel);
