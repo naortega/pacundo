@@ -140,6 +140,7 @@ $n, $tx->{action}, $tx->{pkg_name}
 # NOTE: Currently this subroutine only works for pacman and yay. You'll have to
 # add options for additional AUR helpers.
 sub get_pkgmgr() {
+	# TODO: autodetect AUR helper
 	my $mgr = $ENV{DEFAULT_PKGMGR} // 'pacman';
 	my $mgr_bin = `which $mgr 2>&1`;
 
