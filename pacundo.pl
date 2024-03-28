@@ -139,7 +139,7 @@ $n, $tx->{action}, $tx->{pkg_name}
 
 sub get_pkgmgr() {
 	my $mgr = $ENV{DEFAULT_PKGMGR} // 'pacman';
-	my $mgr_bin = `which $mgr`;
+	my $mgr_bin = `which $mgr 2>&1`;
 
 	if ($? != 0) {
 		print(STDERR "Failed to find pacman executable. Are you using an ArchLinux system?\n");
