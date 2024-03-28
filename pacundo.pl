@@ -149,6 +149,7 @@ sub get_pkgmgr() {
 	my $mgr_cmd_search = "$mgr_bin -Ss";
 	my $mgr_cmd_install_remote = "$mgr_bin -S";
 	my $mgr_cmd_install_local = "$mgr_bin -U";
+	my $mgr_cmd_remove = "$mgr_bin -R";
 
 	my %pkgmgr = (
 		name           => $mgr,
@@ -156,6 +157,7 @@ sub get_pkgmgr() {
 		search         => $mgr_cmd_search,
 		install_remote => $mgr_cmd_install_remote,
 		install_local  => $mgr_cmd_install_local,
+		remove         => $mgr_cmd_remove,
 	);
 
 	return \%pkgmgr;
