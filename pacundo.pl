@@ -137,6 +137,8 @@ $n, $tx->{action}, $tx->{pkg_name}
 	return @sel_undo;
 }
 
+# NOTE: Currently this subroutine only works for pacman and yay. You'll have to
+# add options for additional AUR helpers.
 sub get_pkgmgr() {
 	my $mgr = $ENV{DEFAULT_PKGMGR} // 'pacman';
 	my $mgr_bin = `which $mgr 2>&1`;
@@ -146,18 +148,13 @@ sub get_pkgmgr() {
 		exit 1;
 	}
 
-	my $mgr_cmd_search = "$mgr_bin -Ss";
-	my $mgr_cmd_install_remote = "$mgr_bin -S";
-	my $mgr_cmd_install_local = "$mgr_bin -U";
-	my $mgr_cmd_remove = "$mgr_bin -R";
-
 	my %pkgmgr = (
 		name           => $mgr,
 		bin            => $mgr_bin,
-		search         => $mgr_cmd_search,
-		install_remote => $mgr_cmd_install_remote,
-		install_local  => $mgr_cmd_install_local,
-		remove         => $mgr_cmd_remove,
+		search         => "$mgr_bin -Ss",
+		install_remote => "$mgr_bin -S",
+		install_local  => "$mgr_bin -U",
+		remove         => "$mgr_bin -R",
 	);
 
 	return \%pkgmgr;
