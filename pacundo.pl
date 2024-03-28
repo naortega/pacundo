@@ -29,8 +29,8 @@ use feature qw(signatures);
 use Getopt::Std;
 use File::ReadBackwards;
 
-my $VERSION   = "1.0";
-my $PROG_NAME = "pacundo";
+my $VERSION   = '1.0';
+my $PROG_NAME = 'pacundo';
 
 sub print_version() {
 	print("$PROG_NAME v$VERSION\n");
@@ -60,8 +60,8 @@ sub read_txs($num_txs = 1) {
 	my $found_txs = 0;
 	my $in_tx = 0;
 	my @undo_txs;
-	my $pacman_log = File::ReadBackwards->new("/var/log/pacman.log") or
-		die("Failed to load pacman log file.\n$!");
+	my $pacman_log = File::ReadBackwards->new('/var/log/pacman.log') or
+		die("Failed to load pacman log file.\n$!\n");
 
 	while ($found_txs < $num_txs && defined(my $line = $pacman_log->readline)) {
 		unless ($in_tx) {
@@ -77,18 +77,18 @@ sub read_txs($num_txs = 1) {
 				$line =~ /\[ALPM\] (upgraded|downgraded) ([^\s]+) \((.*) -> (.*)\)/;
 			push(@undo_txs,
 				{
-					'action' => $action,
-					'pkg_name' => $pkg_name,
-					'oldver' => $oldver,
-					'newver' => $newver,
+					action   => $action,
+					pkg_name => $pkg_name,
+					oldver   => $oldver,
+					newver   => $newver,
 				}
 			);
 		} elsif ($line =~ /\[ALPM\] (installed|removed)/) {
 			my ($action, $pkg_name) = $line =~ /\[ALPM\] (installed|removed) ([^\s]+)/;
 			push(@undo_txs,
 				{
-					'action' => $action,
-					'pkg_name' => $pkg_name,
+					action   => $action,
+					pkg_name => $pkg_name,
 				}
 			);
 		}
@@ -118,8 +118,7 @@ $n, $tx->{action}, $tx->{pkg_name}
 		$n++;
 	}
 
-	print("Select transactions to undo (e.g. '1 2 3', '1-3')\n");
-	print("> ");
+	print("Select transactions to undo (e.g. '1 2 3', '1-3')\n> ");
 
 	my @sel = split(' ', <STDIN>);
 
