@@ -141,20 +141,27 @@ $n, $tx->{action}, $tx->{pkg_name}
 sub get_pkgmgr() {
 	# TODO: autodetect AUR helper
 	my $mgr = $ENV{DEFAULT_PKGMGR} // 'pacman';
-	my $mgr_bin = `which $mgr 2>&1`;
+	my $sudo = '';
+	my $user = $ENV{LOGNAME} || $ENV{USER};
 
+	my $mgr_bin = `which $mgr 2>&1`;
 	if ($? != 0) {
 		print(STDERR "Failed to find pacman executable. Are you using an ArchLinux system?\n");
 		exit 1;
+	}
+	chomp($mgr_bin);
+
+	if ($mgr eq 'pacman' && $user ne 'root') {
+		$sudo = 'sudo';
 	}
 
 	my %pkgmgr = (
 		name           => $mgr,
 		bin            => $mgr_bin,
-		search         => "$mgr_bin -Ss",
-		install_remote => "$mgr_bin -S",
-		install_local  => "$mgr_bin -U",
-		remove         => "$mgr_bin -R",
+		search         => "$sudo $mgr_bin -Ss",
+		install_remote => "$sudo $mgr_bin -S",
+		install_local  => "$sudo $mgr_bin -U",
+		remove         => "$sudo $mgr_bin -R",
 	);
 
 	return \%pkgmgr;
@@ -170,6 +177,7 @@ sub find_local_pkg($pkgmgr, $pkg_name, $pkg_ver) {
 		$pkg_file = `ls /var/cache/pacman/pkg/$pkg_name-$pkg_ver-*.pkg.tar.zst | tail -n1`;
 	}
 
+	chomp($pkg_file);
 	return $pkg_file;
 }
 
@@ -219,3 +227,7 @@ foreach my $tx (@undo_txs) {
 		}
 	}
 }
+
+system("$pkgmgr->{remove} $remove_pkgs") if ($remove_pkgs ne '');
+system("$pkgmgr->{install_remote} $remote_install_pkgs") if ($remote_install_pkgs ne '');
+system("$pkgmgr->{install_local} $local_install_pkgs") if ($local_install_pkgs ne '');
