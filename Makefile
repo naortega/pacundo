@@ -25,10 +25,15 @@ PREFIX=/usr/local
 pacundo: pacundo.pl
 	pp -o $@ $^
 
+pacundo.1.gz: pacundo.1
+	gzip -c $^ > $@
+
 .PHONY: install clean
 
 clean:
 	$(RM) pacundo
+	$(RM) pacundo.1.gz
 
-install: pacundo
+install: pacundo pacundo.1.gz
 	install -m 755 pacundo $(PREFIX)/bin/
+	install -m 644 pacundo.1.gz $(PREFIX)/share/man/man1/

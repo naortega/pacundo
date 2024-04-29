@@ -1,0 +1,46 @@
+.TH PACUNDO "1" "April 2024" "pacundo 1.0" "User Commands"
+.SH "NAME"
+pacundo - A time machine to return your ArchLinux machine back to a working state.
+.SH "SYNOPSIS"
+.B pacundo
+[\fI\-i\fR|\fI\-r\fR] [\fI\-t\fR <\fInum\fR>] [\fI\-d\fR]
+
+.B pacundo
+\fI\-h\fR
+
+.B pacundo
+\fI\-v\fR
+
+.SH "DESCRIPTION"
+This program helps to undo the last pacman/yay transactions automatically, which
+is especially helpful if the last update broke your system for some reason.
+
+\fBNote:\fR the term \fItransaction\fR refers to an operation done by pacman
+(e.g. all packages upgraded by \fIpacman -Syu\fR).
+
+.SH "OPTIONS"
+.TP
+\fB\-i\fR
+Interactively select the transactions to undo (default behavior)
+.TP
+\fB\-r\fR
+Non-interactively undo transactions
+.TP
+\fB\-t\fR <\fInum\fR>
+Select number of transactions to include (default: 1)
+.TP
+\fB\-h\fR
+Show help information
+.TP
+\fB\-v\fR
+Show program version
+
+.SH "AUTHOR"
+Written by Nicolás A. Ortega Froysa.
+
+.SH "COPYRIGHT"
+Copyright \(co 2024 Ortega Froysa, Nicolás A. <nicolas@ortegas.org>.
+License: ZLib License.
+
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
