@@ -11,6 +11,14 @@ Dependencies:
 
 - Perl 5
 - `File::ReadBackwards` module
+- PAR Packager (for compiling)
+- GNU Makefile
+
+You can install these packages with the following command:
+
+```console
+# pacman -S perl perl-file-readbackwards perl-par-packer
+```
 
 ## License
 
