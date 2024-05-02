@@ -239,6 +239,12 @@ foreach my $tx (@undo_txs) {
 	}
 }
 
-system("$pkgmgr->{remove} $remove_pkgs") if ($remove_pkgs ne '');
-system("$pkgmgr->{install_remote} $remote_install_pkgs") if ($remote_install_pkgs ne '');
-system("$pkgmgr->{install_local} $local_install_pkgs") if ($local_install_pkgs ne '');
+if ($dry_run) {
+	print("$pkgmgr->{remove} $remove_pkgs\n") if ($remove_pkgs ne '');
+	print("$pkgmgr->{install_remote} $remote_install_pkgs\n") if ($remote_install_pkgs ne '');
+	print("$pkgmgr->{install_local} $local_install_pkgs\n") if ($local_install_pkgs ne '');
+} else {
+	system("$pkgmgr->{remove} $remove_pkgs") if ($remove_pkgs ne '');
+	system("$pkgmgr->{install_remote} $remote_install_pkgs") if ($remote_install_pkgs ne '');
+	system("$pkgmgr->{install_local} $local_install_pkgs") if ($local_install_pkgs ne '');
+}
