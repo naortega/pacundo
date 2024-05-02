@@ -47,9 +47,9 @@ USAGE:
 	$PROG_NAME -v
 
 OPTIONS:
-	-i         Enter interactive mode to select packages to downgrade [default behavior]
-	-r         Automatically downgrade all packages from last upgrade
-	-t <num>   Specify the number of transactions to include for undoing selection [default 1]
+	-i         Enter interactive mode to select package operations to undo (default behavior)
+	-r         Non-interactively undo entire transactions
+	-t <num>   Specify the number of transactions to include (default: 1)
 	-d         Dry run, i.e. don't actually do anything
 	-h         Show this help information
 	-v         Print program version\n");
