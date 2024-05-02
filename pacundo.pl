@@ -139,13 +139,24 @@ $n, $tx->{action}, $tx->{pkg_name}
 # NOTE: Currently this subroutine only works for pacman and yay. You'll have to
 # add options for additional AUR helpers.
 sub get_pkgmgr() {
-	# TODO: autodetect AUR helper
-	my $mgr = $ENV{DEFAULT_PKGMGR} // 'pacman';
+	my $mgr = '';
+	my $mgr_bin;
+	my @supported_mgrs = (
+		'yay',
+		'pacman',
+	);
 	my $sudo = '';
 	my $user = $ENV{LOGNAME} || $ENV{USER};
 
-	my $mgr_bin = `which $mgr 2>&1`;
-	if ($? != 0) {
+	foreach my $i (@supported_mgrs) {
+		$mgr_bin = `which $i 2>&1`;
+		if ($? == 0) {
+			$mgr = $i;
+			last;
+		}
+	}
+
+	if ($mgr eq '') {
 		print(STDERR "Failed to find pacman executable. Are you using an ArchLinux system?\n");
 		exit 1;
 	}
