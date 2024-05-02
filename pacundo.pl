@@ -178,14 +178,22 @@ sub get_pkgmgr() {
 	return \%pkgmgr;
 }
 
-sub find_local_pkg($pkgmgr, $pkg_name, $pkg_ver) {
+sub find_local_pkg($pkgmgr, $pkg_name, $pkg_ver='') {
 	my $pkg_file = '';
 	my $aur_dir = "$ENV{'XDG_CACHE_HOME'}/yay/$pkg_name";
 
 	if ($pkgmgr->{name} eq 'yay' && -d $aur_dir) {
-		$pkg_file = `ls $aur_dir/$pkg_name-$pkg_ver-*.pkg.tar.zst | tail -n1`;
+		if ($pkg_ver ne '') {
+			$pkg_file = `ls $aur_dir/$pkg_name-$pkg_ver-*.pkg.tar.zst | tail -n1`;
+		} else {
+			$pkg_file = `ls $aur_dir/$pkg_name-*.pkg.tar.zst | tail -n1`;
+		}
 	} else {
-		$pkg_file = `ls /var/cache/pacman/pkg/$pkg_name-$pkg_ver-*.pkg.tar.zst | tail -n1`;
+		if ($pkg_ver ne '') {
+			$pkg_file = `ls /var/cache/pacman/pkg/$pkg_name-$pkg_ver-*.pkg.tar.zst | tail -n1`;
+		} else {
+			$pkg_file = `ls /var/cache/pacman/pkg/$pkg_name-*.pkg.tar.zst | tail -n1`;
+		}
 	}
 
 	chomp($pkg_file);
@@ -227,8 +235,12 @@ foreach my $tx (@undo_txs) {
 	if ($tx->{action} eq 'installed') {
 		$remove_pkgs .= "$tx->{pkg_name} ";
 	} elsif ($tx->{action} eq 'removed') {
-		# TODO: install local package if available
-		$remote_install_pkgs .= "$tx->{pkg_name} ";
+		my $pkg_file = &find_local_pkg($pkgmgr, $tx->{pkg_name});
+		if ($pkg_file eq '') {
+			$remote_install_pkgs .= "$tx->{pkg_name} ";
+		} else {
+			$local_install_pkgs .= "$pkg_file ";
+		}
 	} else {
 		my $pkg_file = &find_local_pkg($pkgmgr, $tx->{pkg_name}, $tx->{oldver});
 		if ($pkg_file eq '') {
