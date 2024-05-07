@@ -45,6 +45,10 @@ There are two modes for undoing pacman transactions:
 
 Look at the man-page (`man pacundo`) for more information.
 
+### Supported AUR Helpers
+
+- [yay](https://github.com/Jguer/yay)
+
 ## License
 
 This project is licensed under the terms & conditions of the Zlib license.
