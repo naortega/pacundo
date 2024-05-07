@@ -169,7 +169,7 @@ sub get_pkgmgr() {
 	my %pkgmgr = (
 		name           => $mgr,
 		bin            => $mgr_bin,
-		search         => "$sudo $mgr_bin -Ss",
+		search         => "$mgr_bin -Ss",
 		install_remote => "$sudo $mgr_bin -S",
 		install_local  => "$sudo $mgr_bin -U",
 		remove         => "$sudo $mgr_bin -R",
