@@ -170,6 +170,7 @@ sub get_pkgmgr() {
 		name           => $mgr,
 		bin            => $mgr_bin,
 		search         => "$mgr_bin -Ss",
+		info           => "$mgr_bin -Si",
 		install_remote => "$sudo $mgr_bin -S",
 		install_local  => "$sudo $mgr_bin -U",
 		remove         => "$sudo $mgr_bin -R",
@@ -180,23 +181,31 @@ sub get_pkgmgr() {
 
 sub find_local_pkg($pkgmgr, $pkg_name, $pkg_ver='') {
 	my $pkg_file = '';
-	my $aur_dir = "$ENV{'XDG_CACHE_HOME'}/yay/$pkg_name";
+	my $pkg_pat;
+	my $repo = `$pkgmgr->{info} $pkg_name | awk '{ if (\$1 == "Repository") print \$3; }'`;;
 
-	if ($pkgmgr->{name} eq 'yay' && -d $aur_dir) {
-		if ($pkg_ver ne '') {
-			$pkg_file = `ls $aur_dir/$pkg_name-$pkg_ver-*.pkg.tar.zst | tail -n1`;
-		} else {
-			$pkg_file = `ls $aur_dir/$pkg_name-*.pkg.tar.zst | tail -n1`;
-		}
+	if ($pkg_ver ne '') {
+		$pkg_pat = "$pkg_name-$pkg_ver-*.pkg.tar.zst";
 	} else {
-		if ($pkg_ver ne '') {
-			$pkg_file = `ls /var/cache/pacman/pkg/$pkg_name-$pkg_ver-*.pkg.tar.zst | tail -n1`;
+		$pkg_pat = "$pkg_name-*.pkg.tar.zst";
+	}
+
+	if ($repo eq 'aur') {
+		my $aur_dir;
+
+		if ($pkgmgr->{name} eq 'yay') {
+			$aur_dir = "$ENV{'XDG_CACHE_HOME'}/yay/$pkg_name";
 		} else {
-			$pkg_file = `ls /var/cache/pacman/pkg/$pkg_name-*.pkg.tar.zst | tail -n1`;
+			return '';
 		}
+
+		$pkg_file = `ls $aur_dir/$pkg_pat | tail -n1`;
+	} else {
+		$pkg_file = `ls /var/cache/pacman/pkg/$pkg_pat | tail -n1`;
 	}
 
 	chomp($pkg_file);
+
 	return $pkg_file;
 }
 
