@@ -29,7 +29,7 @@ use feature qw(signatures);
 use Getopt::Std;
 use File::ReadBackwards;
 
-my $VERSION   = '1.0';
+my $VERSION   = '1.0.1';
 my $PROG_NAME = 'pacundo';
 
 sub print_version() {
