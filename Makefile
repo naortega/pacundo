@@ -37,5 +37,7 @@ clean:
 	$(RM) pacundo.1.gz
 
 install: pacundo pacundo.1.gz
+	install -d $(PREFIX)/bin
 	install -m 755 pacundo $(PREFIX)/bin/
+	install -d $(PREFIX)/share/man/man1
 	install -m 644 pacundo.1.gz $(PREFIX)/share/man/man1/
