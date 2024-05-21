@@ -20,7 +20,9 @@
 # 3. This notice may not be removed or altered from any source
 #    distribution.
 
-PREFIX=/usr/local
+ifeq ($(PREFIX),)
+	PREFIX := /usr/local
+endif
 
 pacundo: pacundo.pl
 	pp -o $@ $^
