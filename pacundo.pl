@@ -39,7 +39,7 @@ sub print_version() {
 
 sub print_help() {
 	&print_version();
-	print("A time machine to return your ArchLinux machine back to a working state.
+	print("A time machine to roll back your ArchLinux machine to a working state.
 
 USAGE:
 	$PROG_NAME [-i|-r] [-t <num>] [-d]
