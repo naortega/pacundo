@@ -199,9 +199,9 @@ sub find_local_pkg($pkgmgr, $pkg_name, $pkg_ver='') {
 			return '';
 		}
 
-		$pkg_file = `ls $aur_dir/$pkg_pat | tail -n1`;
+		$pkg_file = `ls $aur_dir/$pkg_pat 2> /dev/null | tail -n1`;
 	} else {
-		$pkg_file = `ls /var/cache/pacman/pkg/$pkg_pat | tail -n1`;
+		$pkg_file = `ls /var/cache/pacman/pkg/$pkg_pat 2> /dev/null | tail -n1`;
 	}
 
 	chomp($pkg_file);
