@@ -183,6 +183,7 @@ sub find_local_pkg($pkgmgr, $pkg_name, $pkg_ver='') {
 	my $pkg_file = '';
 	my $pkg_pat;
 	my $repo = `$pkgmgr->{info} $pkg_name | awk '{ if (\$1 == "Repository") print \$3; }'`;;
+	chomp($repo);
 
 	if ($pkg_ver ne '') {
 		$pkg_pat = "$pkg_name-$pkg_ver-*.pkg.tar.zst";
@@ -206,6 +207,44 @@ sub find_local_pkg($pkgmgr, $pkg_name, $pkg_ver='') {
 
 	chomp($pkg_file);
 
+	return $pkg_file;
+}
+
+sub find_remote_archive($pkgmgr, $pkg_name, $pkg_ver) {
+	my $repo = `$pkgmgr->{info} $pkg_name | awk '{ if (\$1 == "Repository") print \$3; }'`;;
+	chomp($repo);
+	# TODO: look through git history for version.
+	if ($repo eq 'aur') {
+		return '';
+	}
+
+	# TODO: Probably a better way of managing architectures. There should be a
+	# way of getting the architecture of the package.
+	my @archs = (`uname -m`, 'any');
+	my $ala_url = "https://archive.archlinux.org/packages/" .
+		substr($pkg_name,0,1) . "/" . $pkg_name;
+	my $pkg_file = '';
+
+	foreach my $arch (@archs) {
+		chomp($arch);
+		my $filename = "$pkg_name-$pkg_ver-$arch.pkg.tar.zst";
+		my $pkg_url = "$ala_url/$filename";
+		my $output_file = "/tmp/$filename";
+
+		my $resp = `curl -Lo $output_file -s -w '%{http_code}\n' $pkg_url`;
+		chomp($resp);
+		if ($resp eq '200') {
+			system("curl -Lo $output_file.sig -s $pkg_url.sig");
+			$pkg_file = $output_file;
+			last;
+		} else {
+			unlink $output_file;
+		}
+	}
+
+	if ($pkg_file ne '') {
+		print("Downloaded from archive: $pkg_file\n");
+	}
 	return $pkg_file;
 }
 
@@ -252,10 +291,12 @@ foreach my $tx (@undo_txs) {
 		}
 	} else {
 		my $pkg_file = &find_local_pkg($pkgmgr, $tx->{pkg_name}, $tx->{oldver});
-		if ($pkg_file eq '') {
-			$remote_install_pkgs .= "$tx->{pkg_name} ";
-		} else {
+		$pkg_file = &find_remote_archive($pkgmgr, $tx->{pkg_name}, $tx->{oldver}) if ($pkg_file eq '');
+
+		if ($pkg_file ne '') {
 			$local_install_pkgs .= "$pkg_file ";
+		} else {
+			print(STDERR "Unable to find $tx->{pkg_name} $tx->{pkg_ver}");
 		}
 	}
 }
