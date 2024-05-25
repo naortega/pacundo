@@ -11,13 +11,12 @@ to boot from a USB depending on just how broken it is).
 
 - Perl 5
 - `File::ReadBackwards` module
-- PAR Packager (for compiling)
 - GNU Makefile
 
 You can install these packages with the following command:
 
 ```console
-# pacman -S perl perl-file-readbackwards perl-par-packer
+# pacman -S perl perl-file-readbackwards
 ```
 
 ### Compiling & Installing
