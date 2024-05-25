@@ -12,7 +12,7 @@ to boot from a USB depending on just how broken it is).
 - Perl 5
 - `File::ReadBackwards` module
 - cURL
-- GNU Makefile
+- GNU Make
 
 You can install these packages with the following command:
 
