@@ -34,7 +34,7 @@ clean:
 
 doc: pacundo.1.gz
 
-install: pacundo pacundo.1.gz
+install: pacundo.1.gz
 	install -d $(PREFIX)/bin
 	install -m 755 pacundo.pl $(PREFIX)/bin/pacundo
 	install -d $(PREFIX)/share/man/man1
