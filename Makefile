@@ -27,7 +27,7 @@ endif
 pacundo.1.gz: pacundo.1
 	gzip -c $^ > $@
 
-.PHONY: clean doc install
+.PHONY: clean doc install uninstall
 
 clean:
 	$(RM) pacundo.1.gz
@@ -39,3 +39,7 @@ install: pacundo pacundo.1.gz
 	install -m 755 pacundo.pl $(PREFIX)/bin/pacundo
 	install -d $(PREFIX)/share/man/man1
 	install -m 644 pacundo.1.gz $(PREFIX)/share/man/man1/
+
+uninstall:
+	$(RM) $(PREFIX)/bin/pacundo
+	$(RM) $(PREFIX)/share/man/man1/pacundo.1.gz
