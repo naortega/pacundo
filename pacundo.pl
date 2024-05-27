@@ -195,7 +195,11 @@ sub find_local_pkg($pkgmgr, $pkg_name, $pkg_ver='') {
 		my $aur_dir;
 
 		if ($pkgmgr->{name} eq 'yay') {
-			$aur_dir = "$ENV{'XDG_CACHE_HOME'}/yay/$pkg_name";
+			if ($ENV{'XDG_CACHE_HOME'} ne '') {
+				$aur_dir = "$ENV{'XDG_CACHE_HOME'}/yay/$pkg_name";
+			} else {
+				$aur_dir = "$ENV{'HOME'}/.cache/yay/$pkg_name";
+			}
 		} else {
 			return '';
 		}
