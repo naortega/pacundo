@@ -35,10 +35,8 @@ clean:
 doc: pacundo.1.gz
 
 install: pacundo.1.gz
-	install -d $(PREFIX)/bin
-	install -m 755 pacundo.pl $(PREFIX)/bin/pacundo
-	install -d $(PREFIX)/share/man/man1
-	install -m 644 pacundo.1.gz $(PREFIX)/share/man/man1/
+	install -Dm755 pacundo.pl $(PREFIX)/bin/pacundo
+	install -Dm644 pacundo.1.gz $(PREFIX)/share/man/man1/
 
 uninstall:
 	$(RM) $(PREFIX)/bin/pacundo
